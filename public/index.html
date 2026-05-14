@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>S3 Panda</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0c10;--surface:#111318;--surface2:#181c23;
+  --border:#1f2530;--border2:#2a3040;
+  --accent:#00e5a0;--accent2:#00b87d;
+  --danger:#ff4d6d;--warn:#ffb347;
+  --text:#e2e8f0;--muted:#64748b;--muted2:#94a3b8;
+  --folder:#fbbf24;
+}
+html,body{height:100%}
+body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;z-index:0;
+  background-image:linear-gradient(rgba(0,229,160,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,160,.03) 1px,transparent 1px);
+  background-size:40px 40px;pointer-events:none}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--surface)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+#app{position:relative;z-index:1;display:flex;flex-direction:column;min-height:100vh}
+
+/* HEADER */
+header{display:flex;align-items:center;gap:16px;padding:0 28px;height:60px;
+  background:rgba(10,12,16,.92);border-bottom:1px solid var(--border);
+  backdrop-filter:blur(12px);position:sticky;top:0;z-index:100}
+.logo-mark{width:36px;height:36px;border-radius:10px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex;align-items:center;justify-content:center;
+  font-family:'JetBrains Mono',monospace;font-weight:600;font-size:14px;
+  color:#0a0c10;flex-shrink:0;box-shadow:0 0 20px rgba(0,229,160,.25)}
+.logo-text{font-size:17px;font-weight:700;letter-spacing:-.3px}
+.logo-text span{color:var(--accent)}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.conn-pill{display:none;align-items:center;gap:7px;
+  background:rgba(0,229,160,.08);border:1px solid rgba(0,229,160,.2);
+  border-radius:20px;padding:5px 14px;font-size:12px;font-weight:500;color:var(--accent);
+  font-family:'JetBrains Mono',monospace}
+.conn-pill .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);animation:blink 1.8s ease infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.region-tag{font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--muted);
+  background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:3px 8px}
+
+/* LOGIN */
+.panel{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 20px}
+.card{width:100%;max-width:440px;background:var(--surface);border:1px solid var(--border2);
+  border-radius:20px;padding:40px;
+  box-shadow:0 0 60px rgba(0,0,0,.6),0 0 0 1px rgba(0,229,160,.05);
+  animation:slideUp .4s cubic-bezier(.16,1,.3,1)}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+.login-icon{width:56px;height:56px;border-radius:14px;
+  background:rgba(0,229,160,.08);border:1px solid rgba(0,229,160,.2);
+  display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 20px}
+.card h2{text-align:center;font-size:22px;font-weight:700;margin-bottom:6px}
+.card .subtitle{text-align:center;font-size:13px;color:var(--muted);margin-bottom:28px}
+.field{margin-bottom:18px}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--muted2);
+  letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px}
+.input-wrap{position:relative}
+input[type=text],input[type=password],select{
+  width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;
+  padding:12px 16px;font-size:14px;color:var(--text);
+  font-family:'JetBrains Mono',monospace;outline:none;transition:border-color .2s,box-shadow .2s}
+input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,229,160,.12)}
+input::placeholder{color:var(--muted)}
+.eye-btn{position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  background:none;border:none;cursor:pointer;font-size:16px;color:var(--muted);padding:4px}
+.eye-btn:hover{color:var(--text)}
+select{appearance:none;cursor:pointer}
+select option{background:#1a1f2e}
+.btn-primary{width:100%;background:var(--accent);color:#0a0c10;border:none;border-radius:10px;
+  padding:13px;font-size:15px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;
+  margin-top:8px;transition:background .2s,transform .1s,box-shadow .2s;letter-spacing:.3px;
+  box-shadow:0 0 20px rgba(0,229,160,.2)}
+.btn-primary:hover{background:#00ffa8;box-shadow:0 0 30px rgba(0,229,160,.35)}
+.btn-primary:active{transform:scale(.98)}
+.btn-primary:disabled{background:#1f4438;color:var(--muted);cursor:not-allowed;box-shadow:none}
+.err-box{display:none;margin-top:14px;
+  background:rgba(255,77,109,.08);border:1px solid rgba(255,77,109,.3);
+  border-radius:10px;padding:12px 16px;font-size:13px;color:#ff8fa3;line-height:1.5}
+.sec-note{display:flex;align-items:center;justify-content:center;gap:6px;
+  font-size:11px;color:var(--muted);margin-top:16px}
+.sec-note::before{content:'🔒';font-size:11px}
+
+/* DASHBOARD */
+#dash-panel{display:none;flex-direction:column}
+.toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:12px 24px;background:rgba(17,19,24,.95);border-bottom:1px solid var(--border);
+  backdrop-filter:blur(8px);position:sticky;top:60px;z-index:50}
+.bucket-select{background:var(--surface2);border:1px solid var(--border2);
+  border-radius:24px;padding:7px 16px;font-size:13px;font-weight:600;
+  color:var(--accent);font-family:'JetBrains Mono',monospace;outline:none;cursor:pointer}
+.breadcrumb{display:flex;align-items:center;gap:4px;flex:1;
+  font-size:13px;font-family:'JetBrains Mono',monospace;
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:24px;padding:7px 14px;min-width:0;overflow:hidden}
+.crumb{color:var(--accent);cursor:pointer;white-space:nowrap;transition:color .15s}
+.crumb:hover{color:#fff;text-decoration:underline}
+.crumb-sep{color:var(--muted);font-size:11px}
+.tb-btn{background:var(--surface2);border:1px solid var(--border2);
+  border-radius:8px;padding:7px 14px;font-size:13px;font-weight:600;
+  font-family:'Syne',sans-serif;color:var(--muted2);cursor:pointer;
+  white-space:nowrap;transition:all .15s}
+.tb-btn:hover{color:var(--text);background:var(--border)}
+.tb-btn.danger:hover{color:var(--danger);border-color:rgba(255,77,109,.3);background:rgba(255,77,109,.06)}
+.tb-btn.upload{color:var(--accent);border-color:rgba(0,229,160,.25);background:rgba(0,229,160,.06)}
+.tb-btn.upload:hover{background:rgba(0,229,160,.12);border-color:rgba(0,229,160,.4)}
+.logout-btn{background:none;border:1px solid var(--border2);border-radius:8px;
+  padding:7px 14px;font-size:13px;font-weight:600;font-family:'Syne',sans-serif;
+  color:var(--muted);cursor:pointer;transition:all .15s}
+.logout-btn:hover{color:var(--danger);border-color:rgba(255,77,109,.3);background:rgba(255,77,109,.06)}
+
+/* SEARCH ROW */
+.search-row{display:flex;gap:10px;padding:10px 24px;
+  background:rgba(17,19,24,.8);border-bottom:1px solid var(--border)}
+.search-row input[type=text]{flex:1;border-radius:24px;padding:9px 18px;
+  font-family:'Syne',sans-serif;font-size:14px;background:var(--surface2)}
+.search-btn{background:var(--accent);color:#0a0c10;border:none;border-radius:24px;
+  padding:9px 22px;font-size:13px;font-weight:700;font-family:'Syne',sans-serif;
+  cursor:pointer;transition:background .15s;white-space:nowrap}
+.search-btn:hover{background:#00ffa8}
+.clear-btn{background:var(--surface2);border:1px solid var(--border2);border-radius:24px;
+  padding:9px 18px;font-size:13px;font-family:'Syne',sans-serif;
+  color:var(--muted2);cursor:pointer;transition:all .15s}
+.clear-btn:hover{color:var(--text);border-color:var(--border2)}
+
+/* FILE TABLE */
+.file-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:600px}
+thead th{padding:10px 16px;font-size:11px;font-weight:600;text-transform:uppercase;
+  letter-spacing:.6px;color:var(--muted);text-align:left;
+  background:rgba(17,19,24,.9);border-bottom:1px solid var(--border)}
+tbody tr{border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s}
+tbody tr:hover{background:rgba(255,255,255,.025)}
+tbody tr.selected{background:rgba(0,229,160,.05)}
+td{padding:11px 16px;font-size:13px;vertical-align:middle}
+.name-cell{display:flex;align-items:center;gap:10px;max-width:380px}
+.file-icon{font-size:16px;flex-shrink:0}
+.file-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.type-badge{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.5px;
+  padding:2px 8px;border-radius:4px;text-transform:uppercase;font-family:'JetBrains Mono',monospace}
+.badge-folder{background:rgba(251,191,36,.1);color:var(--folder);border:1px solid rgba(251,191,36,.2)}
+.badge-file{background:rgba(100,116,139,.1);color:var(--muted2);border:1px solid var(--border2)}
+.size-cell{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted2);text-align:right}
+.date-cell{font-size:12px;color:var(--muted);font-family:'JetBrains Mono',monospace}
+.actions-cell{white-space:nowrap}
+.act-btn{background:none;border:none;cursor:pointer;font-size:14px;
+  padding:5px 8px;border-radius:6px;color:var(--muted);transition:all .15s;margin-right:2px}
+.act-btn:hover{background:var(--surface2)}
+.act-btn.dl:hover{color:var(--accent)}
+.act-btn.del:hover{color:var(--danger)}
+.loading-row td,.empty-row td{text-align:center;padding:60px 20px;color:var(--muted);font-size:14px}
+.spinner{width:28px;height:28px;border:3px solid var(--border2);
+  border-top-color:var(--accent);border-radius:50%;
+  animation:spin .7s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+#empty-state{display:none;text-align:center;padding:60px 20px}
+.empty-icon{font-size:40px;margin-bottom:12px}
+
+/* STATS */
+.stats-bar{display:flex;align-items:center;gap:20px;padding:10px 24px;
+  border-top:1px solid var(--border);font-size:12px;color:var(--muted);
+  font-family:'JetBrains Mono',monospace;background:rgba(10,12,16,.8)}
+.stats-bar span{color:var(--muted2)}
+.stats-bar strong{color:var(--accent)}
+
+/* TOAST */
+#toast-wrap{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast{display:flex;align-items:center;gap:10px;
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:12px;padding:12px 18px;font-size:13px;font-weight:500;
+  min-width:240px;box-shadow:0 8px 32px rgba(0,0,0,.5);
+  animation:toastIn .3s cubic-bezier(.16,1,.3,1);transition:opacity .3s}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+.toast.success{border-color:rgba(0,229,160,.3)}
+.toast.error{border-color:rgba(255,77,109,.3);color:#ff8fa3}
+.toast.info{border-color:rgba(100,116,139,.3)}
+
+/* DROP OVERLAY */
+#drop-overlay{display:none;position:fixed;inset:0;z-index:200;
+  background:rgba(0,229,160,.06);border:3px dashed var(--accent);
+  align-items:center;justify-content:center;flex-direction:column;gap:12px;
+  font-size:22px;font-weight:700;color:var(--accent);backdrop-filter:blur(4px)}
+#drop-overlay.active{display:flex}
+input[type=file]{display:none}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- HEADER -->
+<header>
+  <div class="logo-mark">S3</div>
+  <div class="logo-text"><span>S3</span> Panda</div>
+  <div class="header-right">
+    <div class="conn-pill" id="conn-pill">
+      <div class="dot"></div>
+      <span id="pill-bucket">—</span>
+    </div>
+    <span class="region-tag" id="region-tag" style="display:none"></span>
+    <button class="logout-btn" id="logout-btn" style="display:none" onclick="doLogout()">Sign out</button>
+  </div>
+</header>
+
+<!-- LOGIN -->
+<div class="panel" id="login-panel">
+  <div class="card">
+    <div class="login-icon">🔐</div>
+    <h2>Connect to S3</h2>
+    <p class="subtitle">Enter your AWS Access Key and Secret Key to access your buckets</p>
+
+    <div class="field">
+      <label>AWS Access Key ID</label>
+      <input type="text" id="ak" placeholder="AKIAXXXXXXXXXXXXXXXX" autocomplete="off" spellcheck="false"
+             onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+
+    <div class="field">
+      <label>AWS Secret Access Key</label>
+      <div class="input-wrap">
+        <input type="password" id="sk" placeholder="Your secret access key" autocomplete="off"
+               onkeydown="if(event.key==='Enter')doLogin()">
+        <button class="eye-btn" onclick="togglePass()" tabindex="-1">👁</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Region</label>
+      <select id="region-sel">
+        <option value="ap-south-1">ap-south-1 — Mumbai (India)</option>
+        <option value="us-east-1">us-east-1 — N. Virginia</option>
+        <option value="us-east-2">us-east-2 — Ohio</option>
+        <option value="us-west-1">us-west-1 — N. California</option>
+        <option value="us-west-2">us-west-2 — Oregon</option>
+        <option value="eu-west-1">eu-west-1 — Ireland</option>
+        <option value="eu-central-1">eu-central-1 — Frankfurt</option>
+        <option value="ap-southeast-1">ap-southeast-1 — Singapore</option>
+        <option value="ap-northeast-1">ap-northeast-1 — Tokyo</option>
+      </select>
+    </div>
+
+    <button class="btn-primary" id="conn-btn" onclick="doLogin()">Connect to S3</button>
+    <div class="err-box" id="err-box"></div>
+    <p class="sec-note">Keys sent only to this server — never stored, never logged</p>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dash-panel">
+  <div class="toolbar">
+    <select class="bucket-select" id="bucket-sel" onchange="switchBucket()"></select>
+    <div class="breadcrumb" id="breadcrumb">
+      <span class="crumb" onclick="goRoot()">root</span>
+    </div>
+    <button class="tb-btn" onclick="goUp()">↑ Up</button>
+    <button class="tb-btn" onclick="refreshFolder()">↺ Refresh</button>
+    <button class="tb-btn upload" onclick="triggerUpload()">↑ Upload</button>
+    <button class="tb-btn danger" id="del-sel-btn" style="display:none" onclick="deleteSelected()">🗑 Delete selected</button>
+    <button class="logout-btn" onclick="doLogout()">Sign out</button>
+  </div>
+
+  <div class="search-row">
+    <input type="text" id="search-in" placeholder="Search files across entire bucket... (Enter)" onkeydown="if(event.key==='Enter')doSearch()">
+    <button class="search-btn" onclick="doSearch()">Search</button>
+    <button class="clear-btn" onclick="clearSearch()">✕ Clear</button>
+  </div>
+
+  <div class="file-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:36px"><input type="checkbox" id="sel-all" onchange="toggleSelectAll(this)"></th>
+          <th>Name</th>
+          <th style="width:80px">Type</th>
+          <th style="width:90px;text-align:right">Size</th>
+          <th style="width:160px">Last Modified</th>
+          <th style="width:80px">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="file-tbody"></tbody>
+    </table>
+    <div id="empty-state">
+      <div class="empty-icon">📂</div>
+      <p style="color:var(--muted);font-size:14px">No files found</p>
+    </div>
+  </div>
+
+  <div class="stats-bar">
+    <span>Folders: <strong id="stat-folders">0</strong></span>
+    <span>Files: <strong id="stat-files">0</strong></span>
+    <span>Total size: <strong id="stat-size">0 B</strong></span>
+  </div>
+</div>
+
+</div><!-- #app -->
+
+<div id="drop-overlay">
+  <div style="font-size:48px">☁️</div>
+  <div>Drop files to upload</div>
+  <div style="font-size:14px;color:var(--muted2)">into /<span id="drop-target">root</span></div>
+</div>
+
+<div id="toast-wrap"></div>
+<input type="file" id="file-input" multiple onchange="handleUpload(this)">
+
+<script>
+// ══════════════════════════════════════════════════════════════
+//  STATE — credentials stored in memory for the session only
+// ══════════════════════════════════════════════════════════════
+let AK = ""           // Access Key ID  — set on login, cleared on logout
+let SK = ""           // Secret Key     — set on login, cleared on logout
+let REGION = "ap-south-1"
+let currentBucket = ""
+let currentPrefix = ""
+let prefixStack   = []
+let allItems      = []
+let selected      = new Set()
+let searchMode    = false
+
+// ── UTILS ────────────────────────────────────────────────────
+function fmtBytes(b) {
+  if (!b || b === 0) return "0 B"
+  const u = ["B","KB","MB","GB","TB"]
+  const i = Math.floor(Math.log(b) / Math.log(1024))
+  return (b / Math.pow(1024, i)).toFixed(1) + " " + u[i]
+}
+function fmtDate(d) {
+  if (!d) return "—"
+  return new Date(d).toLocaleDateString("en-IN", {day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})
+}
+function esc(s) { return (s||"").replace(/\\/g,"\\\\").replace(/'/g,"\\'").replace(/"/g,"&quot;") }
+function showErr(msg) { const b=document.getElementById("err-box"); b.textContent=msg; b.style.display="block" }
+function hideErr()    { document.getElementById("err-box").style.display="none" }
+
+function toast(msg, type="success", ms=3000) {
+  const w = document.getElementById("toast-wrap")
+  const t = document.createElement("div"); t.className="toast "+type
+  const ico = {success:"✅",error:"❌",info:"ℹ️"}
+  t.innerHTML = `<span>${ico[type]||"•"}</span><span>${msg}</span>`
+  w.appendChild(t)
+  setTimeout(()=>{ t.style.opacity="0"; setTimeout(()=>t.remove(),300) }, ms)
+}
+
+function togglePass() {
+  const i = document.getElementById("sk")
+  i.type = i.type === "password" ? "text" : "password"
+}
+
+// ── API HELPER ───────────────────────────────────────────────
+// Builds query string — always injects ak & sk
+function qs(params) {
+  const p = new URLSearchParams({ ak: AK, sk: SK, ...params })
+  return "?" + p.toString()
+}
+
+async function api(url, opts={}) {
+  const res = await fetch(url, {
+    headers: opts.body && typeof opts.body === "string" ? { "Content-Type": "application/json" } : {},
+    ...opts
+  })
+  const data = await res.json().catch(()=>({}))
+  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`)
+  return data
+}
+
+// ── LOGIN ────────────────────────────────────────────────────
+async function doLogin() {
+  hideErr()
+  const ak     = document.getElementById("ak").value.trim()
+  const sk     = document.getElementById("sk").value.trim()
+  const region = document.getElementById("region-sel").value
+
+  if (!ak) { showErr("Please enter your AWS Access Key ID."); return }
+  if (!sk) { showErr("Please enter your AWS Secret Access Key."); return }
+
+  const btn = document.getElementById("conn-btn")
+  btn.disabled = true; btn.textContent = "Connecting..."
+
+  try {
+    // Store creds in memory
+    AK = ak; SK = sk; REGION = region
+
+    // Call /api/buckets — server will use our ak/sk, NOT any IAM role
+    const data = await api(`/api/buckets${qs({ region })}`)
+
+    if (!data.buckets || data.buckets.length === 0) {
+      throw new Error("No S3 buckets found for this account.")
+    }
+
+    // Populate bucket dropdown
+    const sel = document.getElementById("bucket-sel")
+    sel.innerHTML = ""
+    data.buckets.forEach(name => {
+      const o = document.createElement("option"); o.value=name; o.textContent=name; sel.appendChild(o)
+    })
+
+    currentBucket = data.buckets[0]
+    currentPrefix = ""; prefixStack = []
+
+    // Show dashboard
+    document.getElementById("conn-pill").style.display  = "flex"
+    document.getElementById("pill-bucket").textContent  = currentBucket
+    document.getElementById("region-tag").style.display = "inline-block"
+    document.getElementById("region-tag").textContent   = REGION
+    document.getElementById("logout-btn").style.display = "inline-block"
+    document.getElementById("login-panel").style.display = "none"
+    document.getElementById("dash-panel").style.display  = "flex"
+    document.getElementById("dash-panel").style.flexDirection = "column"
+
+    loadFolder()
+    setupDropZone()
+
+  } catch (err) {
+    // Clear creds on failure
+    AK = ""; SK = ""
+    showErr(err.message)
+    btn.disabled = false; btn.textContent = "Connect to S3"
+  }
+}
+
+// ── LOGOUT ───────────────────────────────────────────────────
+function doLogout() {
+  // Wipe credentials from memory immediately
+  AK = ""; SK = ""
+  currentBucket = ""; currentPrefix = ""; prefixStack = []; allItems = []; selected.clear()
+
+  document.getElementById("ak").value = ""
+  document.getElementById("sk").value = ""
+  document.getElementById("login-panel").style.display = "flex"
+  document.getElementById("dash-panel").style.display  = "none"
+  document.getElementById("conn-pill").style.display   = "none"
+  document.getElementById("region-tag").style.display  = "none"
+  document.getElementById("logout-btn").style.display  = "none"
+  document.getElementById("conn-btn").disabled  = false
+  document.getElementById("conn-btn").textContent = "Connect to S3"
+  hideErr()
+}
+
+// ── NAVIGATION ───────────────────────────────────────────────
+function switchBucket() {
+  currentBucket = document.getElementById("bucket-sel").value
+  currentPrefix = ""; prefixStack = []; searchMode = false
+  document.getElementById("pill-bucket").textContent = currentBucket
+  loadFolder()
+}
+function goRoot()    { currentPrefix=""; prefixStack=[]; searchMode=false; loadFolder() }
+function goUp()      {
+  if (prefixStack.length) { currentPrefix=prefixStack.pop(); searchMode=false; loadFolder() }
+  else if (currentPrefix) { currentPrefix=""; searchMode=false; loadFolder() }
+}
+function refreshFolder() { searchMode ? doSearch() : loadFolder() }
+
+function renderBreadcrumb() {
+  const bc = document.getElementById("breadcrumb"); bc.innerHTML=""
+  const r  = document.createElement("span"); r.className="crumb"; r.textContent="root"; r.onclick=goRoot; bc.appendChild(r)
+  if (currentPrefix) {
+    const parts = currentPrefix.split("/").filter(Boolean); let built=""
+    parts.forEach(p => {
+      const sep=document.createElement("span"); sep.className="crumb-sep"; sep.textContent=" / "; bc.appendChild(sep)
+      built += p+"/"
+      const c=document.createElement("span"); c.className="crumb"; c.textContent=p
+      const cap=built; c.onclick=()=>{ currentPrefix=cap; prefixStack=[]; searchMode=false; loadFolder() }
+      bc.appendChild(c)
+    })
+  }
+}
+
+// ── LOAD FOLDER ──────────────────────────────────────────────
+async function loadFolder() {
+  searchMode=false; renderBreadcrumb(); setLoading(); selected.clear(); updateDelBtn()
+  try {
+    const data = await api(`/api/list${qs({ bucket:currentBucket, prefix:currentPrefix, region:REGION })}`)
+    allItems = [...data.folders, ...data.files]
+    renderRows(allItems)
+  } catch(err) {
+    showTableErr(err.message)
+  }
+}
+
+// ── SEARCH ───────────────────────────────────────────────────
+async function doSearch() {
+  const query = document.getElementById("search-in").value.trim()
+  if (!query) { loadFolder(); return }
+  searchMode=true; setLoading()
+  try {
+    const data = await api(`/api/search${qs({ bucket:currentBucket, query, region:REGION })}`)
+    allItems = data.results; renderRows(allItems)
+    toast(`Found ${data.results.length} result(s) for "${query}"`, "info")
+  } catch(err) { showTableErr(err.message) }
+}
+function clearSearch() { document.getElementById("search-in").value=""; searchMode=false; loadFolder() }
+
+// ── RENDER ───────────────────────────────────────────────────
+function setLoading() {
+  document.getElementById("file-tbody").innerHTML=
+    `<tr class="loading-row"><td colspan="6"><div class="spinner"></div>Loading from S3...</td></tr>`
+  document.getElementById("empty-state").style.display="none"
+}
+function showTableErr(msg) {
+  document.getElementById("file-tbody").innerHTML=
+    `<tr class="loading-row"><td colspan="6" style="color:var(--danger)">⚠ ${msg}</td></tr>`
+}
+
+function renderRows(items) {
+  const tbody = document.getElementById("file-tbody"); tbody.innerHTML=""
+  if (items.length === 0) { document.getElementById("empty-state").style.display="block"; updateStats([]); return }
+  document.getElementById("empty-state").style.display="none"
+
+  items.forEach(item => {
+    const tr   = document.createElement("tr")
+    if (selected.has(item.key)) tr.classList.add("selected")
+
+    const icon  = item.type==="folder" ? "📁" : getFileIcon(item.name)
+    const badge = item.type==="folder"
+      ? `<span class="type-badge badge-folder">folder</span>`
+      : `<span class="type-badge badge-file">file</span>`
+    const dlBtn = item.type==="file"
+      ? `<button class="act-btn dl" title="Download" onclick="event.stopPropagation();downloadFile('${esc(item.key)}','${esc(item.name)}')">⬇</button>` : ""
+    const delBtn = `<button class="act-btn del" title="Delete" onclick="event.stopPropagation();confirmDelete('${esc(item.key)}','${esc(item.name)}')">🗑</button>`
+
+    tr.innerHTML=`
+      <td onclick="event.stopPropagation();toggleRow(this,'${esc(item.key)}')">
+        <input type="checkbox" ${selected.has(item.key)?"checked":""}>
+      </td>
+      <td><div class="name-cell">
+        <span class="file-icon">${icon}</span>
+        <span class="file-name" title="${esc(item.key)}">${item.name}</span>
+      </div></td>
+      <td>${badge}</td>
+      <td class="size-cell">${item.size!=null?fmtBytes(item.size):"—"}</td>
+      <td class="date-cell">${fmtDate(item.modified)}</td>
+      <td class="actions-cell">${dlBtn}${delBtn}</td>`
+
+    if (item.type==="folder") {
+      tr.onclick=()=>{ prefixStack.push(currentPrefix); currentPrefix=item.key; searchMode=false; loadFolder() }
+    }
+    tbody.appendChild(tr)
+  })
+  updateStats(items)
+}
+
+function getFileIcon(name) {
+  const ext=(name.split(".").pop()||"").toLowerCase()
+  return {pdf:"📕",doc:"📝",docx:"📝",xls:"📊",xlsx:"📊",csv:"📊",ppt:"📋",pptx:"📋",
+    jpg:"🖼",jpeg:"🖼",png:"🖼",gif:"🖼",svg:"🖼",webp:"🖼",
+    mp4:"🎬",mov:"🎬",avi:"🎬",mp3:"🎵",wav:"🎵",
+    zip:"📦",tar:"📦",gz:"📦",rar:"📦",
+    js:"📜",ts:"📜",py:"🐍",json:"📋",html:"🌐",css:"🎨",
+    sh:"⚙️",sql:"🗄",txt:"📄",md:"📄",log:"📄"}[ext] || "📄"
+}
+
+function updateStats(items) {
+  document.getElementById("stat-folders").textContent = items.filter(i=>i.type==="folder").length
+  document.getElementById("stat-files").textContent   = items.filter(i=>i.type==="file").length
+  document.getElementById("stat-size").textContent    = fmtBytes(items.reduce((s,i)=>s+(i.size||0),0))
+}
+
+// ── SELECTION ────────────────────────────────────────────────
+function toggleRow(td, key) {
+  const cb=td.querySelector("input[type=checkbox]"), tr=td.closest("tr")
+  if (selected.has(key)) { selected.delete(key); cb.checked=false; tr.classList.remove("selected") }
+  else                   { selected.add(key);    cb.checked=true;  tr.classList.add("selected")    }
+  updateDelBtn()
+}
+function toggleSelectAll(cb) {
+  const rows=document.querySelectorAll("#file-tbody tr")
+  allItems.forEach((item,i)=>{
+    if (cb.checked) { selected.add(item.key); rows[i]?.classList.add("selected") }
+    else            { selected.delete(item.key); rows[i]?.classList.remove("selected") }
+    const rc=rows[i]?.querySelector("input[type=checkbox]"); if(rc) rc.checked=cb.checked
+  })
+  updateDelBtn()
+}
+function updateDelBtn() {
+  const btn=document.getElementById("del-sel-btn")
+  btn.style.display = selected.size>0 ? "inline-block" : "none"
+  btn.textContent   = `🗑 Delete selected (${selected.size})`
+}
+
+// ── DOWNLOAD ─────────────────────────────────────────────────
+async function downloadFile(key, name) {
+  toast("Generating download link...", "info")
+  try {
+    const data = await api(`/api/download-url${qs({ bucket:currentBucket, key, region:REGION })}`)
+    const a=document.createElement("a"); a.href=data.url; a.download=name; a.target="_blank"; a.click()
+    toast(`Downloading ${name}`)
+  } catch(err) { toast("Download failed: "+err.message, "error") }
+}
+
+// ── DELETE ───────────────────────────────────────────────────
+async function confirmDelete(key, name) {
+  if (!confirm(`Delete "${name}"?\nThis cannot be undone.`)) return
+  try {
+    await api("/api/delete", {
+      method: "DELETE",
+      body: JSON.stringify({ ak:AK, sk:SK, bucket:currentBucket, key, region:REGION })
+    })
+    toast(`Deleted: ${name}`); refreshFolder()
+  } catch(err) { toast("Delete failed: "+err.message, "error") }
+}
+
+async function deleteSelected() {
+  if (!selected.size) return
+  if (!confirm(`Delete ${selected.size} item(s)?\nThis cannot be undone.`)) return
+  let ok=0, fail=0
+  for (const key of [...selected]) {
+    try {
+      await api("/api/delete", {
+        method: "DELETE",
+        body: JSON.stringify({ ak:AK, sk:SK, bucket:currentBucket, key, region:REGION })
+      }); ok++
+    } catch { fail++ }
+  }
+  toast(`Deleted ${ok}${fail?`, ${fail} failed`:""}`, fail?"error":"success")
+  selected.clear(); updateDelBtn(); refreshFolder()
+}
+
+// ── UPLOAD ───────────────────────────────────────────────────
+function triggerUpload() { document.getElementById("file-input").click() }
+
+async function handleUpload(input) {
+  if (!input.files.length) return
+  await uploadFiles([...input.files])
+  input.value=""
+}
+
+async function uploadFiles(files) {
+  toast(`Uploading ${files.length} file(s)...`, "info", 10000)
+  let ok=0, fail=0
+  for (const file of files) {
+    const fd=new FormData()
+    fd.append("file",   file)
+    fd.append("ak",     AK)           // ← credentials in every upload
+    fd.append("sk",     SK)
+    fd.append("bucket", currentBucket)
+    fd.append("prefix", currentPrefix)
+    fd.append("region", REGION)
+    try {
+      const r = await fetch("/api/upload", { method:"POST", body:fd })
+      if (!r.ok) { const d=await r.json().catch(()=>({})); throw new Error(d.error||"Upload failed") }
+      ok++
+    } catch(e) { console.error(e); fail++ }
+  }
+  toast(ok===files.length ? `Uploaded ${ok} file(s)` : `Uploaded ${ok}, failed ${fail}`, fail>0?"error":"success")
+  refreshFolder()
+}
+
+// ── DRAG & DROP ──────────────────────────────────────────────
+function setupDropZone() {
+  const ov=document.getElementById("drop-overlay"); let dc=0
+  document.addEventListener("dragenter", e=>{ e.preventDefault(); dc++; if(dc===1){ ov.classList.add("active"); document.getElementById("drop-target").textContent=currentPrefix||"root" }})
+  document.addEventListener("dragleave", ()=>{ dc--; if(dc===0)ov.classList.remove("active") })
+  document.addEventListener("dragover",  e=>e.preventDefault())
+  document.addEventListener("drop",      e=>{ e.preventDefault(); dc=0; ov.classList.remove("active"); if(e.dataTransfer.files.length) uploadFiles([...e.dataTransfer.files]) })
+}
+
+// ── KEYBOARD SHORTCUTS ───────────────────────────────────────
+document.addEventListener("keydown", e=>{
+  if ((e.ctrlKey||e.metaKey) && e.key==="k") { e.preventDefault(); document.getElementById("search-in").focus() }
+  if (e.key==="F5") { e.preventDefault(); refreshFolder() }
+})
+</script>
+</body>
+</html>
