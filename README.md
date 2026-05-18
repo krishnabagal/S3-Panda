@@ -86,16 +86,16 @@ You can:
 ---
 ## Table of Contents
 
-- [Features](#-features)
-- [Architecture](#️-architecture)
-- [IAM Setup — Step by Step](#-iam-setup--step-by-step)
-- [Installation & Deployment](#-installation--deployment)
-- [Configuration](#️-configuration)
-- [Project Structure](#-project-structure)
-- [API Reference](#-api-reference)
-- [Security](#️-security)
-- [Contributing](#-contributing)
-- [License](#-license)
+- [Features](#features)
+- [Architecture](#architecture)
+- [IAM Setup — Step by Step](#iam-setup--step-by-step)
+- [Installation & Deployment](#installation--deployment)
+- [Configuration](#configuration)
+- [Project Structure](#project-structure)
+- [API Reference](#api-reference)
+- [Security](#security)
+- [Contributing](#contributing)
+- [License](#license)
 
 ---
 
