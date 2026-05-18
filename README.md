@@ -21,7 +21,7 @@ Browse folders, search files, upload, download, and delete — all from your bro
 
 </div>
 
-## ❓ Why Use S3 Panda?
+## Why Use S3 Panda?
 
 While many S3 management tools already exist in the market, most of them require:
 
@@ -32,19 +32,19 @@ While many S3 management tools already exist in the market, most of them require
 
 S3 Panda solves this by providing a lightweight, browser-based S3 dashboard that runs entirely on your own EC2 instance.
 
-### ✅ Key Advantages
+### Key Advantages
 
 | Advantage                       | Description                                                                                   |
 | ------------------------------- | --------------------------------------------------------------------------------------------- |
-| 🌐 No local installation        | Users only need a browser — no desktop application or AWS CLI setup required                  |
-| 🔐 No AWS Console access needed | End users can access only the required S3 buckets without exposing the AWS Management Console |
-| 👥 Easy multi-user access       | Deploy once on EC2 and share access with multiple users using IAM policies                    |
-| 🎯 User-friendly UI             | Simple dashboard designed for both technical and non-technical users                          |
-| 🛡️ Controlled access            | You can create multiple restrict bucket permissions using IAM policies based on business requirements|
-| 🚀 Self-hosted                  | Runs fully inside your AWS environment — no third-party SaaS dependency                       |
-| 💰 Cost-effective               | One centralized deployment instead of installing tools for every user                         |
+| No local installation        | Users only need a browser — no desktop application or AWS CLI setup required                  |
+| No AWS Console access needed | End users can access only the required S3 buckets without exposing the AWS Management Console |
+| Easy multi-user access       | Deploy once on EC2 and share access with multiple users using IAM policies                    |
+| User-friendly UI             | Simple dashboard designed for both technical and non-technical users                          |
+| Controlled access            | You can create multiple restrict bucket permissions using IAM policies based on business requirements|
+| Self-hosted                  | Runs fully inside your AWS environment — no third-party SaaS dependency                       |
+| Cost-effective               | One centralized deployment instead of installing tools for every user                         |
 
-### 💡 Common Use Cases
+### Common Use Cases
 
 * Sharing S3 access with clients or vendors
 * Providing bucket access to non-technical teams
@@ -54,18 +54,18 @@ S3 Panda solves this by providing a lightweight, browser-based S3 dashboard that
 
 ---
 
-## 👥 Who Should Use S3 Panda?
+## Who Should Use S3 Panda?
 
 S3 Panda is designed for organizations and teams that want a simple and secure way to access AWS S3 buckets without exposing the AWS Console.
 
 ### Best suited for:
 
-* 👨‍💼 End users who only need S3 file access
-* 🧑‍💻 Non-technical users who prefer a simple dashboard
-* 🏢 Organizations that do not want to share AWS Console access
-* 📂 Teams managing uploads/downloads from S3 regularly
-* 🔐 Companies requiring controlled bucket-level access using IAM policies
-* ☁️ Businesses looking for a self-hosted S3 file explorer
+* End users who only need S3 file access
+* Non-technical users who prefer a simple dashboard
+* Organizations that do not want to share AWS Console access
+* Teams managing uploads/downloads from S3 regularly
+* Companies requiring controlled bucket-level access using IAM policies
+* Businesses looking for a self-hosted S3 file explorer
 
 ### Perfect Example
 
@@ -84,40 +84,40 @@ You can:
 
 
 ---
-## 📋 Table of Contents
+## Table of Contents
 
-- [✨ Features](#-features)
-- [🏗️ Architecture](#️-architecture)
-- [🔐 IAM Setup — Step by Step](#-iam-setup--step-by-step)
-- [🚀 Installation & Deployment](#-installation--deployment)
-- [⚙️ Configuration](#️-configuration)
-- [📁 Project Structure](#-project-structure)
-- [🔌 API Reference](#-api-reference)
-- [🛡️ Security](#️-security)
-- [🤝 Contributing](#-contributing)
-- [📄 License](#-license)
+- [Features](#-features)
+- [Architecture](#️-architecture)
+- [IAM Setup — Step by Step](#-iam-setup--step-by-step)
+- [Installation & Deployment](#-installation--deployment)
+- [Configuration](#️-configuration)
+- [Project Structure](#-project-structure)
+- [API Reference](#-api-reference)
+- [Security](#️-security)
+- [Contributing](#-contributing)
+- [License](#-license)
 
 ---
 
-## ✨ Features
+## Features
 
 | Feature | Details |
 |---|---|
-| 🔐 **Credential-based login** | Enter AWS Access Key + Secret in browser — sent only to your EC2 server, never stored |
-| 🪣 **Multi-bucket support** | Auto-lists all buckets accessible by your credentials |
-| 📁 **Folder navigation** | Browse nested prefixes with breadcrumb trail and Up button |
-| 🔍 **Full-bucket search** | Searches all objects across the entire bucket (up to 500 results) |
-| ⬇️ **Secure downloads** | Pre-signed S3 URLs — valid for 10 minutes |
-| ⬆️ **File upload** | Upload single or multiple files; drag-and-drop supported |
-| 🗑️ **Delete** | Delete single files or bulk-delete with checkbox selection |
-| 📊 **Stats bar** | Live folder/file count and total size |
-| 🌍 **Multi-region** | 9 AWS regions selectable at login |
-| 🎨 **Dark UI** | Syne + JetBrains Mono fonts, green accent, grid texture |
-| 🐼 **Panda logo** | Custom SVG panda face — because why not |
+|  **Credential-based login** | Enter AWS Access Key + Secret in browser — sent only to your EC2 server, never stored |
+|  **Multi-bucket support** | Auto-lists all buckets accessible by your credentials |
+|  **Folder navigation** | Browse nested prefixes with breadcrumb trail and Up button |
+|  **Full-bucket search** | Searches all objects across the entire bucket (up to 500 results) |
+|  **Secure downloads** | Pre-signed S3 URLs — valid for 10 minutes |
+|  **File upload** | Upload single or multiple files; drag-and-drop supported |
+|  **Delete** | Delete single files or bulk-delete with checkbox selection |
+|  **Stats bar** | Live folder/file count and total size |
+|  **Multi-region** | 9 AWS regions selectable at login |
+|  **Dark UI** | Syne + JetBrains Mono fonts, green accent, grid texture |
+|  **Panda logo** | Custom SVG panda face — because why not |
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 ┌──────────────────────────────────────────────────────────┐
@@ -176,7 +176,7 @@ Browser: GET /api/list?bucket=my-bucket&prefix=images/&ak=AKIA...&sk=...
 
 ---
 
-## 🔐 IAM Setup — Step by Step
+## IAM Setup — Step by Step
 
 S3 Panda needs an IAM user (or role) with S3 permissions. The included `s3panda-iam-policy.json` defines the minimum required actions.
 
@@ -229,7 +229,7 @@ Open `http://YOUR_EC2_IP:3000` in your browser, enter the Access Key ID and Secr
 
 ---
 
-## 🚀 Installation & Deployment
+## Installation & Deployment
 
 ### Prerequisites
 
@@ -297,7 +297,7 @@ aws ec2 authorize-security-group-ingress \
   --cidr YOUR_IP_ADDRESS/32
 ```
 
-> 🔒 Do **not** open port 3000 to `0.0.0.0/0`. Restrict to your IP or put an HTTPS ALB in front.
+>  Do **not** open port 3000 to `0.0.0.0/0`. Restrict to your IP or put an HTTPS ALB in front.
 
 ### Step 5 — Run as a Persistent Service
 
@@ -367,7 +367,7 @@ sudo nginx -t && sudo systemctl enable --now nginx
 
 ---
 
-## ⚙️ Configuration
+## Configuration
 
 ### Environment Variables
 
@@ -399,7 +399,7 @@ const url = await getSignedUrl(s3, command, { expiresIn: 600 }); // ← seconds
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 s3panda/
@@ -437,7 +437,7 @@ Routes    →  GET  /api/health          liveness check
 
 ---
 
-## 🔌 API Reference
+## API Reference
 
 All routes require `ak` (Access Key ID) and `sk` (Secret Access Key) — passed as query params for GET, or in the request body for POST/DELETE.
 
@@ -542,7 +542,7 @@ curl -X DELETE http://localhost:3000/api/delete \
 
 ---
 
-## 🛡️ Security
+## Security
 
 ### What S3 Panda never does
 
@@ -581,7 +581,7 @@ All AWS SDK errors are mapped to user-friendly messages and never expose raw sta
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 ```bash
 git clone https://github.com/krishnabagal/s3panda.git
@@ -613,7 +613,7 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for full guidelines.
 
 ---
 
-## 📄 License
+## License
 
 MIT © 2026 S3 Panda Contributors — see [LICENSE](./LICENSE) for full text.
 
@@ -634,6 +634,3 @@ MIT © 2026 S3 Panda Contributors — see [LICENSE](./LICENSE) for full text.
 
 ⭐ Star this repo if S3 Panda made your S3 workflow easier!
 
-[🐛 Report Bug](https://github.com/krishnabagal/s3panda/issues) · [💡 Request Feature](https://github.com/krishnabagal/s3panda/issues) · [💬 Discussions](https://github.com/krishnabagal/s3panda/discussions)
-
-</div>
